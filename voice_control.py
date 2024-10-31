@@ -5,7 +5,9 @@ class VoiceControl:
     def __init__(self, midi_controller):
         self.recognizer = sr.Recognizer()
         self.midi_controller = midi_controller
-        self.listening = True
+        self.listening = True     
+        self.selected_channel = None
+
 
     def listen_for_commands(self):
         while self.listening:
@@ -25,46 +27,70 @@ class VoiceControl:
                 print("Fehler beim Abrufen der Sprachdaten")
 
     def process_command(self, command):
-        # Kanal auswählen
+        # Kanal- und Notenwert-Mappings
         channel_mapping = {
-            "1": 1,
-            "eins": 1,
-            "2": 2,
-            "zwei": 2,
-            "3": 3,
-            "drei": 3,
-            "4": 4,
-            "vier": 4
-
-        }         
-        # Notenwert-Mapping
-        note_value_mapping = {
-            "viertel": "viertel",
-            "achtel": "achtel",
-            "Achtel": "achtel",
-            "sechzehntel": "sechzehntel",
-            "16": "sechzehntel"  # Akzeptiere auch "16" als Befehl für Sechzehntel-Noten
+            "1": 1, "eins": 1,
+            "2": 2, "zwei": 2,
+            "3": 3, "drei": 3,
+            "4": 4, "vier": 4
         }
-    
-        if command.lower() in channel_mapping:
-            channel = channel_mapping[command.lower()]
-            self.midi_controller.set_channel(channel)
-            print(f"Kanal {channel} wurde per Sprachbefehl ausgewählt.")
-        
-        # Start/Stop Befehl für den aktuellen Kanal
-        elif "start" in command.lower() and self.midi_controller.selected_channel is not None:
-            self.midi_controller.start_loop(self.midi_controller.selected_channel)
-        
-        elif "stop" in command.lower() and self.midi_controller.selected_channel is not None:
-            self.midi_controller.stop_loop(self.midi_controller.selected_channel)
-        
-        elif command in note_value_mapping:
-                note_value = note_value_mapping[command]
-                if self.midi_controller.selected_channel is not None:
-                    self.midi_controller.set_note_value(self.midi_controller.selected_channel, note_value)
-                    print(f"Notenwert für Kanal {self.midi_controller.selected_channel} auf {note_value} gesetzt.")
-                else:
-                    print("Kein Kanal ausgewählt. Bitte zuerst einen Kanal auswählen.")
+        note_value_mapping = {
+            "viertel": "viertel", "vier": "viertel", "viertelnote": "viertel",
+            "achtel": "achtel", "acht": "achtel", "achtelnote": "achtel",
+            "sechzehntel": "sechzehntel", "sechzehn": "sechzehntel", "16": "sechzehntel"
+        }
+
+        # Zerlege den Befehl in einzelne Wörter
+        words = command.lower().strip().split()
+        print(f"Verarbeitete Wörter: {words}")  # Debugging-Output
+
+        selected_channel = None
+        action = None
+        note_value = None
+
+        # Prüfe jedes Wort im Befehl und speichere die erkannte Information
+        for word in words:
+            if word in channel_mapping:
+                selected_channel = channel_mapping[word]  # Nur lokal setzen
+                self.selected_channel = selected_channel  # Aktualisiere den gespeicherten Kanal
+                print(f"Kanal {self.selected_channel} wurde per Sprachbefehl ausgewählt.")
+            elif word == "start":
+                action = "start"
+            elif word == "stopp":
+                action = "stop"
+            elif word in note_value_mapping:
+                note_value = note_value_mapping[word]
+
+        # Nutze den zuletzt ausgewählten Kanal, wenn keiner im aktuellen Befehl angegeben wurde
+        if selected_channel is None:
+            selected_channel = self.selected_channel
+
+        # Zusätzliche Debugging-Informationen
+        if selected_channel is None:
+            print("Kein Kanal ausgewählt.")
+        if action is None:
+            print("Keine gültige Aktion erkannt.")
+        if not (selected_channel or action or note_value):
+            print("Kein gültiger Befehl erkannt.")
+
+        # Aktionen basierend auf den erkannten Wörtern
+        if action == "start" and selected_channel is not None:
+            self.midi_controller.start_loop(selected_channel)
+            print(f"Loop für Kanal {selected_channel} gestartet.")
+        elif action == "stop" and selected_channel is not None:
+            self.midi_controller.stop_loop(selected_channel)
+            print(f"Loop für Kanal {selected_channel} gestoppt.")
+        else:
+            print("Aktion konnte nicht ausgeführt werden, Kanal oder Aktion fehlt.")
+
+        # Setze den Notenwert, falls dieser erkannt wurde und ein Kanal ausgewählt ist
+        if note_value and selected_channel is not None:
+            self.midi_controller.set_note_value(selected_channel, note_value)
+            print(f"Notenwert für Kanal {selected_channel} auf {note_value} gesetzt.")
+
+        # Wenn keine der Aktionen erkannt wurde
+        if not (selected_channel or action or note_value):
+            print("Kein gültiger Befehl erkannt.")
 
     def start(self):
         self.thread = Thread(target=self.listen_for_commands)
