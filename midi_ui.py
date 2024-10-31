@@ -62,7 +62,7 @@ class MidiUI(QWidget):
             print("Kein Kanal ausgewählt. Bitte zuerst einen Kanal auswählen.")
             return
 
-        if self.midi_controller.selected_channel in self.midi_controller.channel_loops:
+        if self.midi_controller.channels[self.midi_controller.selected_channel]:
             # Loop läuft bereits, daher stoppen
             self.midi_controller.stop_loop(self.midi_controller.selected_channel)
             self.loop_button.setText("Loop starten")
