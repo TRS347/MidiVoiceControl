@@ -65,7 +65,9 @@ class MidiController:
     def _get_duration_from_note_value(self, channel):
         # Bestimmt die Dauer basierend auf dem Notenwert
         note_value = self.note_values.get(channel, "viertel")  # Standard ist Viertel
-        if note_value == "viertel":
+        if note_value == "halbe":
+            return self.beat_duration * 2  # Halbe Note ist doppelt so lang wie eine Viertelnote
+        elif note_value == "viertel":
             return self.beat_duration
         elif note_value == "achtel":
             return self.beat_duration / 2

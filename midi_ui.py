@@ -24,7 +24,7 @@ class MidiUI(QWidget):
         layout.addWidget(note_label)
 
         self.note_value_combo = QComboBox()
-        self.note_value_combo.addItems(["Viertel", "Achtel", "Sechzehntel"])
+        self.note_value_combo.addItems(["Halbe", "Viertel", "Achtel", "Sechzehntel"])
         self.note_value_combo.currentTextChanged.connect(self.change_note_value)
         layout.addWidget(self.note_value_combo)
 
@@ -51,6 +51,7 @@ class MidiUI(QWidget):
         """Ändert den Notenwert des ausgewählten Kanals."""
         if self.midi_controller.selected_channel is not None:
             note_value_map = {
+                "Halbe": "halbe",
                 "Viertel": "viertel",
                 "Achtel": "achtel",
                 "Sechzehntel": "sechzehntel"

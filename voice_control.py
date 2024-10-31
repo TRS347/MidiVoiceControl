@@ -29,12 +29,13 @@ class VoiceControl:
     def process_command(self, command):
         # Kanal- und Notenwert-Mappings
         channel_mapping = {
-            "1": 1, "eins": 1,
-            "2": 2, "zwei": 2,
-            "3": 3, "drei": 3,
+            "1": 1, "eins": 1, "kick": 1, "kik": 1, "kikk": 1,
+            "2": 2, "zwei": 2, "snare": 2,
+            "3": 3, "drei": 3, "hihat": 3, "hyatt": 3,
             "4": 4, "vier": 4
         }
         note_value_mapping = {
+            "halbe": "halbe", "halb": "halbe",
             "viertel": "viertel", "vier": "viertel", "viertelnote": "viertel",
             "achtel": "achtel", "acht": "achtel", "achtelnote": "achtel",
             "sechzehntel": "sechzehntel", "sechzehn": "sechzehntel", "16": "sechzehntel"
