@@ -74,3 +74,15 @@ class MidiController:
         else:
             print(f"Unbekannter Notenwert '{note_value}' für Kanal {channel}, verwende Standard-Viertel.")
             return self.beat_duration  # Fallback zu Viertel
+
+    def start_all_loops(self):
+        """Startet den Loop für alle Kanäle."""
+        for channel in self.channels:
+            self.start_loop(channel)
+        print("Alle Kanäle wurden gestartet.")
+
+    def stop_all_loops(self):
+        """Stoppt den Loop für alle Kanäle."""
+        for channel in self.channels:
+            self.stop_loop(channel)
+        print("Alle Kanäle wurden gestoppt.")

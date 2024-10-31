@@ -47,6 +47,7 @@ class VoiceControl:
         selected_channel = None
         action = None
         note_value = None
+        all_channels_action = False
 
         # Prüfe jedes Wort im Befehl und speichere die erkannte Information
         for word in words:
@@ -60,6 +61,10 @@ class VoiceControl:
                 action = "stop"
             elif word in note_value_mapping:
                 note_value = note_value_mapping[word]
+            elif word == "beat" and "start" in words:
+                all_channels_action = "start"
+            elif word == "beat" and "stop" in words:
+                all_channels_action = "stop"
 
         # Nutze den zuletzt ausgewählten Kanal, wenn keiner im aktuellen Befehl angegeben wurde
         if selected_channel is None:
@@ -72,6 +77,15 @@ class VoiceControl:
             print("Keine gültige Aktion erkannt.")
         if not (selected_channel or action or note_value):
             print("Kein gültiger Befehl erkannt.")
+
+
+        # Wenn "Beat Start" oder "Beat Stop" erkannt wurde
+        if all_channels_action == "start":
+            self.midi_controller.start_all_loops()
+            print("Alle Kanäle wurden gestartet.")
+        elif all_channels_action == "stop":
+            self.midi_controller.stop_all_loops()
+            print("Alle Kanäle wurden gestoppt.")
 
         # Aktionen basierend auf den erkannten Wörtern
         if action == "start" and selected_channel is not None:

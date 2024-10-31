@@ -33,6 +33,11 @@ class MidiUI(QWidget):
         self.loop_button.clicked.connect(self.toggle_loop)
         layout.addWidget(self.loop_button)
 
+        # Button für "Beat Start/Stop" für alle Kanäle
+        self.beat_button = QPushButton("Beat Start")
+        self.beat_button.clicked.connect(self.toggle_all_loops)
+        layout.addWidget(self.beat_button)
+
         self.setLayout(layout)
         self.setWindowTitle('MIDI Controller')
         self.show()
@@ -45,7 +50,6 @@ class MidiUI(QWidget):
     def change_note_value(self, note_value):
         """Ändert den Notenwert des ausgewählten Kanals."""
         if self.midi_controller.selected_channel is not None:
-            # Mapped `note_value` text to controller-compatible string
             note_value_map = {
                 "Viertel": "viertel",
                 "Achtel": "achtel",
@@ -63,12 +67,21 @@ class MidiUI(QWidget):
             return
 
         if self.midi_controller.channels[self.midi_controller.selected_channel]:
-            # Loop läuft bereits, daher stoppen
             self.midi_controller.stop_loop(self.midi_controller.selected_channel)
             self.loop_button.setText("Loop starten")
             print(f"Loop für Kanal {self.midi_controller.selected_channel} gestoppt.")
         else:
-            # Loop starten
             self.midi_controller.start_loop(self.midi_controller.selected_channel)
             self.loop_button.setText("Loop stoppen")
             print(f"Loop für Kanal {self.midi_controller.selected_channel} gestartet.")
+
+    def toggle_all_loops(self):
+        """Startet oder stoppt den Loop für alle Kanäle."""
+        if any(self.midi_controller.channels.values()):
+            self.midi_controller.stop_all_loops()
+            self.beat_button.setText("Beat Start")
+            print("Alle Loops wurden gestoppt.")
+        else:
+            self.midi_controller.start_all_loops()
+            self.beat_button.setText("Beat Stop")
+            print("Alle Loops wurden gestartet.")
